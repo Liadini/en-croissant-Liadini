@@ -59,6 +59,7 @@ import {
   practiceSessionStatsAtom,
   practiceStateAtom,
   practiceAutoDifficultyAtom,
+  practiceReviewOrderAtom,
 } from "@/state/atoms";
 import { getTabFile, getTabGameNumber } from "@/utils/tabs";
 import { findFen, getNodeAtPath } from "@/utils/treeReducer";
@@ -131,6 +132,7 @@ function PracticePanel() {
   const [sessionStats, setSessionStats] = useAtom(practiceSessionStatsAtom);
   const setCardStartTime = useSetAtom(practiceCardStartTimeAtom);
   const practiceAutoDifficulty = useAtomValue(practiceAutoDifficultyAtom);
+  const practiceReviewOrder = useAtomValue(practiceReviewOrderAtom);
 
   const newPractice = useCallback(
     (stats?: Partial<PracticeSessionStats>) => {
@@ -148,7 +150,7 @@ function PracticePanel() {
           c = null;
         }
       } else {
-        c = getCardForReview(deck.positions);
+        c = getCardForReview(deck.positions, practiceReviewOrder);
       }
 
       if (!c) {
@@ -172,6 +174,7 @@ function PracticePanel() {
       deck.positions,
       sessionStats.mode,
       sessionStats.remainingPositions,
+      practiceReviewOrder,
       root,
       goToMove,
       setPracticePath,
