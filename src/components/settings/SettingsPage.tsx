@@ -37,6 +37,7 @@ import type { ReviewOrder } from "@/components/files/opening";
 import {
   autoPromoteAtom,
   autoSaveAtom,
+  defaultPanelTabAtom,
   enableBoardScrollAtom,
   eraseDrawablesOnClickAtom,
   forcedEnPassantAtom,
@@ -183,6 +184,7 @@ export default function Page() {
   const [moveNotationType, setMoveNotationType] = useAtom(moveNotationTypeAtom);
   const [showCoordinates, setShowCoordinates] = useAtom(showCoordinatesAtom);
   const [materialDisplay, setMaterialDisplay] = useAtom(materialDisplayAtom);
+  const [defaultPanelTab, setDefaultPanelTab] = useAtom(defaultPanelTabAtom);
   const [practiceAutoDifficulty, setPracticeAutoDifficulty] = useAtom(practiceAutoDifficultyAtom);
   const [practiceReviewOrder, setPracticeReviewOrder] = useAtom(practiceReviewOrderAtom);
 
@@ -356,6 +358,28 @@ export default function Page() {
             allowDeselect={false}
             value={materialDisplay}
             onChange={(val) => setMaterialDisplay(val as "diff" | "all")}
+          />
+        ),
+      },
+      {
+        id: "default-panel-tab",
+        category: "board",
+        title: t("Settings.DefaultPanelTab"),
+        description: t("Settings.DefaultPanelTab.Desc"),
+        keywords: ["default", "panel", "tab", "open", "analysis", "database", "annotate", "info"],
+        render: () => (
+          <Select
+            data={[
+              { label: t("Board.Tabs.Analysis"), value: "analysis" },
+              { label: t("Board.Tabs.Database"), value: "database" },
+              { label: t("Board.Tabs.Annotate"), value: "annotate" },
+              { label: t("Board.Tabs.Info"), value: "info" },
+            ]}
+            allowDeselect={false}
+            value={defaultPanelTab}
+            onChange={(val) =>
+              setDefaultPanelTab(val as "analysis" | "database" | "annotate" | "info")
+            }
           />
         ),
       },
@@ -686,6 +710,8 @@ export default function Page() {
       setPuzzlesDirectory,
       setShowCoordinates,
       setMaterialDisplay,
+      defaultPanelTab,
+      setDefaultPanelTab,
       practiceAutoDifficulty,
       setPracticeAutoDifficulty,
       practiceReviewOrder,
