@@ -484,6 +484,8 @@
     "Menu.View": "Widok",
     "Menu.View.Fullscreen": "",
     "Menu.View.Reload": "Przeładuj",
+    "Menu.View.ToggleSidebar": "",
+    "Menu.View.ToggleTabBar": "",
     "Notation.HideComments": "",
     "Notation.HideMoves": "",
     "Notation.HideVariations": "",
