@@ -64,6 +64,7 @@ export default function ImportModal({
   const [loading, setLoading] = useState(false);
   const [, setCurrentTab] = useAtom(currentTabAtom);
   const [fenError, setFenError] = useState("");
+  const [linkError, setLinkError] = useState("");
 
   const [save, setSave] = useState(false);
   const [filename, setFilename] = useState("");
@@ -144,9 +145,11 @@ export default function ImportModal({
       try {
         pgn = await getGameFromUrl(link);
       } catch (e) {
+        setLinkError(e instanceof Error ? e.message : String(e));
         setLoading(false);
         return;
       }
+      setLinkError("");
 
       const tree = await parsePGN(pgn);
       setCurrentTab((prev) => {
@@ -163,7 +166,7 @@ export default function ImportModal({
     } else if (importType === "FEN") {
       const res = parseFen(fen.trim());
       if (res.isErr) {
-        setFenError(chessopsError(res.error));
+        setFenError(t(chessopsError(res.error)));
         setLoading(false);
         return;
       }
@@ -276,6 +279,7 @@ export default function ImportModal({
       <TextInput
         value={link}
         onChange={(event) => setLink(event.currentTarget.value)}
+        error={linkError}
         label={t("Import.GameURL")}
         data-autofocus
         onKeyDown={(e) => {
