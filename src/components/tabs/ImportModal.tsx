@@ -80,6 +80,11 @@ function ImportGameForm({
   const store = useStore();
 
   async function handleSubmit() {
+    // Only a picked file fills the name in
+    if (save && importType !== "FEN" && !filename.trim()) {
+      setError(t("Common.RequireName"));
+      return;
+    }
     setLoading(true);
     if (importType === "PGN") {
       if (file || pgn) {
@@ -137,6 +142,19 @@ function ImportGameForm({
               type: fileInfo.metadata.type,
             });
           }
+        } else if (save) {
+          const newFile = await createFile({
+            filename,
+            filetype,
+            pgn,
+            dir: documentDir,
+          });
+          if (newFile.isErr) {
+            setError(newFile.error.message);
+            setLoading(false);
+            return;
+          }
+          await openFile(newFile.value, setTabs, setActiveTab);
         } else {
           const tempFile = await resolve(await tempDir(), `import_${Date.now()}.pgn`);
           await writeTextFile(tempFile, pgn);
@@ -158,18 +176,48 @@ function ImportGameForm({
       }
       setLinkError("");
 
+      let fileInfo: FileMetadata | undefined;
+      if (save) {
+        const newFile = await createFile({
+          filename,
+          filetype,
+          pgn,
+          dir: documentDir,
+        });
+        if (newFile.isErr) {
+          setError(newFile.error.message);
+          setLoading(false);
+          return;
+        }
+        fileInfo = newFile.value;
+      }
+
       const tree = await parsePGN(pgn);
       setCurrentTab((prev) => {
         sessionStorage.setItem(prev.value, JSON.stringify({ version: 0, state: tree }));
         return {
           ...prev,
           name: getGameName(tree.headers),
-          gameOrigin: {
-            kind: "none",
-          },
+          gameOrigin: fileInfo
+            ? {
+                kind: "file",
+                file: fileInfo,
+                gameNumber: 0,
+              }
+            : {
+                kind: "none",
+              },
           type: "analysis",
         };
       });
+
+      if (fileInfo) {
+        store.set(addRecentFileAtom, {
+          name: fileInfo.name,
+          path: fileInfo.path,
+          type: fileInfo.metadata.type,
+        });
+      }
     } else if (importType === "FEN") {
       const res = parseFen(fen.trim());
       if (res.isErr) {
@@ -221,7 +269,7 @@ function ImportGameForm({
         onSubmit={handleSubmit}
       />
 
-      {importType === "PGN" && (
+      {importType !== "FEN" && (
         <Stack mt="md">
           <Checkbox
             label={t("Import.SaveToCollection")}
@@ -236,7 +284,10 @@ function ImportGameForm({
                 placeholder={t("Common.EnterFileName")}
                 required
                 value={filename}
-                onChange={(e) => setFilename(e.currentTarget.value)}
+                onChange={(e) => {
+                  setFilename(e.currentTarget.value);
+                  if (error) setError("");
+                }}
                 error={error}
               />
 
