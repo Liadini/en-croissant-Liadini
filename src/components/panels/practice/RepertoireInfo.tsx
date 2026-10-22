@@ -242,39 +242,29 @@ function RepertoireInfo() {
   return (
     <Stack h="100%" p="sm" gap={0} style={{ overflow: "hidden" }}>
       {isBeforeStart && (
-        <Paper p="sm" my="sm" withBorder>
-          <Stack gap="xs">
-            <Text fz="xs" c="dimmed">
-              {t("Board.Practice.Build.BeforeStart")}
-            </Text>
-            <Button
-              leftSection={<IconPlayerPlay size={16} />}
-              variant="light"
-              size="xs"
-              onClick={() => goToMove(startPath)}
-            >
-              {t("Board.Practice.Build.GoToStart")}
-            </Button>
-          </Stack>
-        </Paper>
+        <Button
+          fullWidth
+          my="sm"
+          leftSection={<IconPlayerPlay size={16} />}
+          variant="light"
+          size="xs"
+          onClick={() => goToMove(startPath)}
+        >
+          {t("Board.Practice.Build.GoToStart")}
+        </Button>
       )}
 
       {!hasStart && !isEmptyTree && (
-        <Paper p="sm" my="sm" withBorder>
-          <Stack gap="xs">
-            <Text fz="xs" c="dimmed">
-              {t("Board.Practice.MarkStart")}
-            </Text>
-            <Button
-              leftSection={<IconFlag size={16} />}
-              variant="light"
-              size="xs"
-              onClick={() => setStart(position)}
-            >
-              {t("Board.Practice.Build.SetAsStart")}
-            </Button>
-          </Stack>
-        </Paper>
+        <Button
+          fullWidth
+          my="sm"
+          leftSection={<IconFlag size={16} />}
+          variant="light"
+          size="xs"
+          onClick={() => setStart(position)}
+        >
+          {t("Board.Practice.Build.SetAsStart")}
+        </Button>
       )}
 
       {isEmptyTree && position.length === 0 && (

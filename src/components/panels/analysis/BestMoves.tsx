@@ -278,25 +278,16 @@ function BestMovesComponent({
             {!isGameOver &&
               !error &&
               !engineVariations &&
-              (settings.enabled ? (
-                [...Array(settings.settings.find((s) => s.name === "MultiPV")?.value ?? 1)].map(
-                  (_, i) => (
-                    <Table.Tr key={i}>
-                      <Table.Td>
-                        <Skeleton height={35} radius="xl" p={5} />
-                      </Table.Td>
-                    </Table.Tr>
-                  ),
-                )
-              ) : (
-                <Table.Tr>
-                  <Table.Td>
-                    <Text ta="center" my="lg">
-                      {t("Board.Analysis.InactiveEngine")}
-                    </Text>
-                  </Table.Td>
-                </Table.Tr>
-              ))}
+              settings.enabled &&
+              [...Array(settings.settings.find((s) => s.name === "MultiPV")?.value ?? 1)].map(
+                (_, i) => (
+                  <Table.Tr key={i}>
+                    <Table.Td>
+                      <Skeleton height={35} radius="xl" p={5} />
+                    </Table.Td>
+                  </Table.Tr>
+                ),
+              )}
             {!isGameOver &&
               !error &&
               finalFen &&
