@@ -9,10 +9,9 @@ import {
   Text,
   TextInput,
 } from "@mantine/core";
-import { useElementSize } from "@mantine/hooks";
 import { IconCheck, IconEdit, IconX } from "@tabler/icons-react";
 import { useAtom, useAtomValue } from "jotai";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { DatabaseInfo } from "@/bindings";
 import { useOpenDatabase } from "@/hooks/useOpenDatabase";
 import { sessionsAtom } from "@/state/atoms";
@@ -36,6 +35,22 @@ const CARDS_PER_ROW = 2;
 
 function remToPx(rem: number) {
   return rem * Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+}
+
+// An element's width, measured as the element appears, before it's painted (Mantine's
+// useElementSize reports it a frame later, and never for an element that appears after its
+// component first rendered), then again whenever it changes
+function useMeasuredWidth<T extends HTMLElement>() {
+  const [width, setWidth] = useState(0);
+  const ref = useCallback((element: T | null) => {
+    if (!element) return;
+    const measure = () => setWidth(element.getBoundingClientRect().width);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+  return { ref, width };
 }
 
 function AccountCards({
@@ -72,9 +87,8 @@ function AccountCards({
   );
 }
 
-// Its own component, so it's rendered along with the element whose width it measures: Mantine's
-// useElementSize only watches an element that's there when the component first renders, and
-// the first account added would otherwise replace EmptyAccounts unmeasured
+// Every player's cards, measured as they're first shown, so the first account added gets its
+// card at once and no card is ever drawn without its width
 function PlayerSessions({
   playerSessions,
   databases,
@@ -85,7 +99,7 @@ function PlayerSessions({
   setDatabases: React.Dispatch<React.SetStateAction<DatabaseInfo[]>>;
 }) {
   // Every card is as wide, sized for the width they have (and as tall: see AccountCard)
-  const { ref, width } = useElementSize();
+  const { ref, width } = useMeasuredWidth<HTMLDivElement>();
   const { cardSize } = cardGrid(
     width,
     remToPx(GAP),
@@ -97,7 +111,7 @@ function PlayerSessions({
   return (
     <ScrollArea offsetScrollbars>
       <Stack ref={ref}>
-        {/* Once its width is known, so no card is drawn at the wrong size first */}
+        {/* Once its width is known, which is before it's painted */}
         {width > 0 &&
           playerSessions.map(({ name, sessions }) => (
             <PlayerSession
