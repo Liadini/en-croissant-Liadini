@@ -64,6 +64,7 @@ import { ask } from "@tauri-apps/plugin-dialog";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { check } from "@tauri-apps/plugin-updater";
 import ErrorComponent from "@/components/ErrorComponent";
+import PreloadBoardImages from "@/components/boards/PreloadBoardImages";
 import { getDatabasesDir, getDocumentDir, getEnginesDir, getPuzzlesDir } from "@/utils/directories";
 import { initUserAgent } from "@/utils/http";
 import { routeTree } from "./routeTree.gen";
@@ -332,6 +333,7 @@ export default function App() {
         rel="stylesheet"
         href={`/pieces${is3d ? "-3d" : ""}/${getPieceSet(pieceSet, is3d)}.css`}
       />
+      <PreloadBoardImages />
 
       <MantineProvider
         colorSchemeManager={colorSchemeManager}
