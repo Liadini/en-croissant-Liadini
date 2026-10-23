@@ -1,5 +1,6 @@
 import {
   ActionIcon,
+  Box,
   Divider,
   Group,
   ScrollArea,
@@ -8,17 +9,33 @@ import {
   Text,
   TextInput,
 } from "@mantine/core";
+import { useElementSize } from "@mantine/hooks";
 import { IconCheck, IconEdit, IconX } from "@tabler/icons-react";
 import { useAtom, useAtomValue } from "jotai";
 import { useEffect, useRef, useState } from "react";
 import type { DatabaseInfo } from "@/bindings";
 import { sessionsAtom } from "@/state/atoms";
+import { cardGrid } from "@/utils/cardGrid";
 import { getChessComAccount, getStats } from "@/utils/chess.com/api";
 import { getLichessAccount } from "@/utils/lichess/api";
 import type { Session } from "@/utils/session";
 import { compareAccounts } from "@/utils/sort";
 import { AccountCard, type AccountCardDisplay } from "../home/AccountCard";
 import { EmptyAccounts } from "../home/EmptyAccounts";
+
+// The cards' width, in rem so it follows the app's font size. The narrowest a card can be: its
+// header (logo, name, buttons) still fits
+const MIN_CARD_SIZE = 18;
+// The widest, so a wide window fits more cards rather than wider ones
+const MAX_CARD_SIZE = 21;
+// The Group's gap between the cards: Mantine's md spacing
+const GAP = 1;
+// A player's Lichess and Chess.com cards side by side
+const CARDS_PER_ROW = 2;
+
+function remToPx(rem: number) {
+  return rem * Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+}
 
 function AccountCards({
   databases,
@@ -30,6 +47,15 @@ function AccountCards({
   onAddAccount: () => void;
 }) {
   const sessions = useAtomValue(sessionsAtom);
+  // Every card is as wide, sized for the width they have (and as tall: see AccountCard)
+  const { ref, width } = useElementSize();
+  const { cardSize } = cardGrid(
+    width,
+    remToPx(GAP),
+    remToPx(MIN_CARD_SIZE),
+    remToPx(MAX_CARD_SIZE),
+    CARDS_PER_ROW,
+  );
   const playerNames = Array.from(
     new Set(sessions.map((s) => s.player ?? s.lichess?.username ?? s.chessCom?.username)),
   ).sort((a, b) => (a ?? "").localeCompare(b ?? ""));
@@ -47,16 +73,19 @@ function AccountCards({
 
   return (
     <ScrollArea offsetScrollbars>
-      <Stack>
-        {playerSessions.map(({ name, sessions }) => (
-          <PlayerSession
-            key={name}
-            name={name!}
-            sessions={sessions}
-            databases={databases}
-            setDatabases={setDatabases}
-          />
-        ))}
+      <Stack ref={ref}>
+        {/* Once its width is known, so no card is drawn at the wrong size first */}
+        {width > 0 &&
+          playerSessions.map(({ name, sessions }) => (
+            <PlayerSession
+              key={name}
+              name={name!}
+              sessions={sessions}
+              databases={databases}
+              setDatabases={setDatabases}
+              cardSize={cardSize}
+            />
+          ))}
       </Stack>
     </ScrollArea>
   );
@@ -67,11 +96,13 @@ function PlayerSession({
   sessions,
   databases,
   setDatabases,
+  cardSize,
 }: {
   name: string;
   sessions: Session[];
   databases: DatabaseInfo[];
   setDatabases: React.Dispatch<React.SetStateAction<DatabaseInfo[]>>;
+  cardSize: number;
 }) {
   const [, setSessions] = useAtom(sessionsAtom);
   const [edit, setEdit] = useState(false);
@@ -161,13 +192,14 @@ function PlayerSession({
       <Divider />
       <Group>
         {[...sessions].sort(compareAccounts).map((session, i) => (
-          <LichessOrChessCom
-            key={i}
-            session={session}
-            databases={databases}
-            setDatabases={setDatabases}
-            setSessions={setSessions}
-          />
+          <Box key={i} style={{ width: cardSize }}>
+            <LichessOrChessCom
+              session={session}
+              databases={databases}
+              setDatabases={setDatabases}
+              setSessions={setSessions}
+            />
+          </Box>
         ))}
       </Group>
     </Stack>

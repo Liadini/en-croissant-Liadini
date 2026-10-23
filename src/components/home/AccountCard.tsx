@@ -40,6 +40,9 @@ import { downloadLichess } from "@/utils/lichess/api";
 import { unwrap } from "@/utils/unwrap";
 import LichessLogo from "./LichessLogo";
 
+// The most time controls either site has a rating for (Lichess and Chess.com have four each)
+const RATING_ROWS = 4;
+
 interface AccountCardProps {
   type: "lichess" | "chesscom";
   database: DatabaseInfo | null;
@@ -115,6 +118,19 @@ export function AccountCard({
       </Group>
     );
   });
+  // Rows kept for the time controls an account has no rating in, so every card is as tall
+  for (let i = stats.length; i < RATING_ROWS; i++) {
+    items.push(
+      <Group key={`empty-${i}`} wrap="nowrap" style={{ visibility: "hidden" }} aria-hidden>
+        <Text size="xs" fw={700}>
+          -
+        </Text>
+        <Text fw={700} size="sm">
+          -
+        </Text>
+      </Group>,
+    );
+  }
   // Shared with every other card showing this account
   const [loading, setLoading] = useAtom(accountDownloadingFamily(`${type}_${title}`));
   const [progress, setProgress] = useAtom(accountDownloadProgressFamily(`${type}_${title}`));
@@ -213,24 +229,21 @@ export function AccountCard({
         }
       }}
     >
+      {/* One line whatever the name's length (cut short), so every card's header is as tall */}
       <Card.Section withBorder={!compact} inheritPadding py={compact ? 0 : "xs"}>
-        <Group
-          justify="space-between"
-          wrap={homeScreen ? "nowrap" : undefined}
-          gap={homeScreen ? "xs" : undefined}
-        >
+        <Group justify="space-between" wrap="nowrap" gap={homeScreen ? "xs" : undefined}>
           <Group
-            wrap={homeScreen ? "nowrap" : undefined}
+            wrap="nowrap"
             gap={homeScreen ? "xs" : undefined}
             // The room the buttons leave, so a long name is cut short rather than the buttons wrapping
-            style={homeScreen ? { flex: 1, minWidth: 0 } : undefined}
+            style={{ flex: 1, minWidth: 0 }}
           >
             {type === "lichess" ? (
               <LichessLogo />
             ) : (
               <img width={30} height={30} src="/chesscom.png" alt="chess.com" />
             )}
-            <Text fw={600} size="sm" truncate={homeScreen}>
+            <Text fw={600} size="sm" truncate>
               {title}
             </Text>
             {type === "lichess" && token && !homeScreen && (
@@ -241,7 +254,7 @@ export function AccountCard({
               </Tooltip>
             )}
           </Group>
-          <Group gap={4}>
+          <Group gap={4} wrap="nowrap">
             <Tooltip label={t("Home.Accounts.UpdateStats")}>
               <ActionIcon variant="subtle" color="gray" onClick={() => reload()}>
                 <IconRefresh size="1rem" />
